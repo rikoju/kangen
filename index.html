@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Love Journey - 3 Stage Experience</title>
+
+    <style>
+        /* ========== GLOBAL & TRANSISI ========== */
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            font-family: 'Segoe UI', 'Poppins', 'Quicksand', system-ui, sans-serif;
+        }
+
+        .stage-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .stage {
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .stage-hidden {
+            display: none;
+        }
+
+        .stage-visible {
+            display: block;
+        }
+
+        /* Tombol Lanjutkan */
+        .next-button {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #ff4d6d, #ff6b8b);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 8px 20px rgba(255, 77, 109, 0.4);
+            transition: all 0.3s ease;
+            font-family: inherit;
+            letter-spacing: 1px;
+        }
+
+        .next-button:hover {
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 12px 28px rgba(255, 77, 109, 0.6);
+        }
+
+        .next-button.hidden {
+            display: none;
+        }
+
+        /* ========== STAGE 1: LOADING SCREEN ========== */
+        .loading-text-stage1 {
+            position: absolute;
+            bottom: 12%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            font-weight: 400;
+            color: #ff4d6d;
+            text-shadow: 0 0 8px rgba(255, 77, 109, 0.2);
+            animation: pulseText 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulseText {
+            0% {
+                opacity: 0.5;
+                transform: translateY(0px);
+                letter-spacing: 2px;
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateY(-3px);
+                letter-spacing: 4px;
+                text-shadow: 0 0 12px #ff4d6d;
+            }
+
+            100% {
+                opacity: 0.5;
+                transform: translateY(0px);
+                letter-spacing: 2px;
+            }
+        }
+
+        .credit-stage1 {
+            position: absolute;
+            bottom: 12px;
+            right: 16px;
+            font-size: 11px;
+            color: #ffb3c1;
+            font-family: monospace;
+            background: rgba(255, 255, 240, 0.6);
+            padding: 4px 10px;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* ========== STAGE 2: SCROLL LOVE PARTICLE ========== */
+        .stage2-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .scroll-content {
+            position: relative;
+            height: 900vh;
+            background: white;
+            z-index: 1;
+        }
+
+        /* ========== STAGE 3: 3D CARD GALLERY ========== */
+        .stage3-scene {
+            width: 100vw;
+            height: 100vh;
+            perspective: 1600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stage3-camera {
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .card {
+            position: absolute;
+            width: 170px;
+            height: 210px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            backface-visibility: visible;
+            will-change: transform;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.2s ease;
+        }
+
+        .card .img-placeholder {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffeef2;
+            color: #ff8aa8;
+            font-size: 32px;
+            z-index: 2;
+        }
+
+        .textCard {
+            font-size: 18px;
+            padding: 20px;
+            text-align: center;
+            line-height: 1.4;
+            font-family: 'Segoe UI', 'Poppins', sans-serif;
+            color: #ff4d6d;
+            background: linear-gradient(135deg, #fff, #fff0f2);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ff4d6d;
+            border-radius: 4px;
+        }
+
+        /* ========== TUTORIAL / TOOLTIP ========== */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tutorial-card {
+            background: white;
+            border-radius: 28px;
+            padding: 28px 24px;
+            max-width: 280px;
+            text-align: center;
+            animation: bounceIn 0.4s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .tutorial-card h3 {
+            margin: 0 0 10px 0;
+            color: #ff4d6d;
+            font-size: 1.5rem;
+        }
+
+        .tutorial-card p {
+            margin: 10px 0;
+            color: #555;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .tutorial-icon {
+            font-size: 48px;
+            margin: 15px 0;
+        }
+
+        .tutorial-button {
+            background: linear-gradient(135deg, #ff4d6d, #ff6b8b);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .tutorial-button:active {
+            transform: scale(0.96);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            80% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Petunjuk mini di galeri */
+        .gallery-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 14px;
+            z-index: 100;
+            display: flex;
+            gap: 20px;
+            pointer-events: none;
+            white-space: nowrap;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .gallery-hint span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .gallery-hint.hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .gallery-hint {
+                font-size: 11px;
+                padding: 8px 16px;
+                gap: 12px;
+                bottom: 15px;
+            }
+
+            .tutorial-card {
+                max-width: 260px;
+                padding: 22px 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="stage-container">
+        <!-- STAGE 1: LOADING 3D LOVE (5 detik) -->
+        <div id="stage1" class="stage stage-visible">
+            <div class="loading-text-stage1">❤️ Loading with Love ❤️</div>
+            <div class="credit-stage1">3D Love | Saturnus Orbit</div>
+        </div>
+
+        <!-- STAGE 2: SCROLL LOVE PARTICLE -->
+        <div id="stage2" class="stage stage-hidden">
+            <canvas id="particleCanvas" class="stage2-canvas"></canvas>
+            <div class="scroll-content" id="scrollContent"></div>
+        </div>
+
+        <!-- STAGE 3: 3D CARD GALLERY -->
+        <div id="stage3" class="stage stage-hidden">
+            <div class="stage3-scene">
+                <div class="stage3-camera" id="camera3d"></div>
+            </div>
+            <div id="galleryHint" class="gallery-hint">
+                <span>👆 Usap → Geser</span>
+                <span>🤏 Cubit → Zoom In/Out</span>
+            </div>
+        </div>
+    </div>
+
+    <button id="nextButton" class="next-button hidden">✨ Lanjutkan ✨</button>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+        }
+    }
+</script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // ========== MANAJEMEN STAGE ==========
+        let currentStage = 1;
+        let stage2ScrollCompleted = false;
+        let stage1Cleanup = null;
+        let tutorialShownForStage2 = false;
+        let tutorialShownForStage3 = false;
+
+        const stage1Div = document.getElementById('stage1');
+        const stage2Div = document.getElementById('stage2');
+        const stage3Div = document.getElementById('stage3');
+        const nextButton = document.getElementById('nextButton');
+        const galleryHint = document.getElementById('galleryHint');
+
+        // Fungsi untuk menampilkan tutorial
+        function showTutorial(message, icon, onClose) {
+            const overlay = document.createElement('div');
+            overlay.className = 'tutorial-overlay';
+            overlay.innerHTML = `
+                <div class="tutorial-card">
+                    <div class="tutorial-icon">${icon}</div>
+                    <h3>💖 Petunjuk</h3>
+                    <p>${message}</p>
+                    <button class="tutorial-button">Mengerti!</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            const button = overlay.querySelector('.tutorial-button');
+            button.addEventListener('click', () => {
+                overlay.remove();
+                if (onClose) onClose();
+            });
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.remove();
+                    if (onClose) onClose();
+                }
+            });
+        }
+
+        function goToStage(stage) {
+            stage1Div.classList.add('stage-hidden');
+            stage1Div.classList.remove('stage-visible');
+            stage2Div.classList.add('stage-hidden');
+            stage2Div.classList.remove('stage-visible');
+            stage3Div.classList.add('stage-hidden');
+            stage3Div.classList.remove('stage-visible');
+
+            if (stage === 1) {
+                stage1Div.classList.remove('stage-hidden');
+                stage1Div.classList.add('stage-visible');
+                currentStage = 1;
+                nextButton.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                if (galleryHint) galleryHint.classList.add('hidden');
+            } else if (stage === 2) {
+                stage2Div.classList.remove('stage-hidden');
+                stage2Div.classList.add('stage-visible');
+                currentStage = 2;
+                nextButton.classList.remove('hidden');
+                nextButton.textContent = '✨ Lanjutkan ✨';
+                document.body.style.overflow = 'auto';
+                if (galleryHint) galleryHint.classList.add('hidden');
+                if (!window.stage2Initialized) {
+                    initStage2();
+                }
+                if (!tutorialShownForStage2) {
+                    tutorialShownForStage2 = true;
+                    setTimeout(() => {
+                        if (currentStage === 2) {
+                            showTutorial(
+                                'Geser layar ke BAWAH secara perlahan untuk melihat perubahan bentuk love! 💕\n\nSemakin ke bawah, love akan berubah menjadi huruf dan bentuk hati yang indah.',
+                                '📜✨',
+                                null
+                            );
+                        }
+                    }, 500);
+                }
+            } else if (stage === 3) {
+                stage3Div.classList.remove('stage-hidden');
+                stage3Div.classList.add('stage-visible');
+                currentStage = 3;
+                nextButton.classList.add('hidden');
+                document.body.style.overflow = 'hidden';
+                if (galleryHint) galleryHint.classList.remove('hidden');
+                if (!window.stage3Initialized) {
+                    initStage3WithSequentialLoading();
+                }
+                if (!tutorialShownForStage3) {
+                    tutorialShownForStage3 = true;
+                    setTimeout(() => {
+                        if (currentStage === 3) {
+                            showTutorial(
+                                '✨ Geser dengan SATU jari untuk menggeser galeri ✨\n\n🤏 Cubit dengan DUA jari (pinch) untuk ZOOM IN dan ZOOM OUT!',
+                                '👆🤏',
+                                () => {
+                                    setTimeout(() => {
+                                        if (galleryHint && currentStage === 3) {
+                                            galleryHint.style.opacity = '0.5';
+                                            setTimeout(() => {
+                                                if (galleryHint && currentStage === 3) {
+                                                    galleryHint.classList.add('hidden');
+                                                }
+                                            }, 2000);
+                                        }
+                                    }, 4000);
+                                }
+                            );
+                            setTimeout(() => {
+                                if (galleryHint && currentStage === 3 && galleryHint.classList.contains('hidden') === false) {
+                                    galleryHint.classList.add('hidden');
+                                }
+                            }, 7000);
+                        }
+                    }, 500);
+                }
+            }
+        }
+
+        // ========== STAGE 1: 3D LOVE ORBIT ==========
+        function initStage1() {
+            const container = stage1Div;
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff);
+
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(3.2, 2.2, 5.5);
+            camera.lookAt(0, 0.2, 0);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "low-power" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = false;
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0x404060);
+            scene.add(ambientLight);
+            const mainLight = new THREE.DirectionalLight(0xffaa88, 1.0);
+            mainLight.position.set(2, 3, 4);
+            scene.add(mainLight);
+            const backLight = new THREE.PointLight(0xff6f91, 0.5);
+            backLight.position.set(-1, 1.5, -2);
+            scene.add(backLight);
+
+            function createPreciseHeartShape() {
+                const shape = new THREE.Shape();
+                shape.moveTo(0, -0.9);
+                shape.bezierCurveTo(0.5, -0.9, 0.9, -0.5, 0.9, 0);
+                shape.bezierCurveTo(0.9, 0.5, 0.5, 0.9, 0, 0.6);
+                shape.bezierCurveTo(-0.5, 0.9, -0.9, 0.5, -0.9, 0);
+                shape.bezierCurveTo(-0.9, -0.5, -0.5, -0.9, 0, -0.9);
+                return shape;
+            }
+
+            const heartShape = createPreciseHeartShape();
+            const extrudeSettings = {
+                steps: 1,
+                depth: 0.35,
+                bevelEnabled: true,
+                bevelThickness: 0.06,
+                bevelSize: 0.05,
+                bevelSegments: 6
+            };
+            const heartGeometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
+            heartGeometry.computeVertexNormals();
+            heartGeometry.center();
+            heartGeometry.rotateX(-Math.PI / 2);
+
+            const heartMaterial = new THREE.MeshStandardMaterial({
+                color: 0xff3366,
+                emissive: 0x441122,
+                roughness: 0.3,
+                metalness: 0.5,
+                emissiveIntensity: 0.3
+            });
+            const heartMesh = new THREE.Mesh(heartGeometry, heartMaterial);
+            heartMesh.scale.set(0.85, 0.85, 0.85);
+            scene.add(heartMesh);
+
+            const sparkleCount = 400;
+            const sparkleGeometry = new THREE.BufferGeometry();
+            const sparklePositions = new Float32Array(sparkleCount * 3);
+            for (let i = 0; i < sparkleCount; i++) {
+                const radius = 1.0 + Math.random() * 1.2;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                sparklePositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+                sparklePositions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta) * 0.9 + 0.1;
+                sparklePositions[i * 3 + 2] = radius * Math.cos(phi) * 0.8;
+            }
+            sparkleGeometry.setAttribute('position', new THREE.BufferAttribute(sparklePositions, 3));
+            const sparkleMaterial = new THREE.PointsMaterial({ color: 0xff88aa, size: 0.04, transparent: true, blending: THREE.AdditiveBlending });
+            const sparkles = new THREE.Points(sparkleGeometry, sparkleMaterial);
+            scene.add(sparkles);
+
+            function createMiniHeart(color, scaleVal = 0.18) {
+                const miniShape = createPreciseHeartShape();
+                const miniExtrude = { steps: 1, depth: 0.2, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.03, bevelSegments: 4 };
+                const miniGeo = new THREE.ExtrudeGeometry(miniShape, miniExtrude);
+                miniGeo.computeVertexNormals();
+                miniGeo.center();
+                miniGeo.rotateX(-Math.PI / 2);
+                const materialMini = new THREE.MeshStandardMaterial({ color: color, emissive: 0x331122, roughness: 0.3, metalness: 0.4, emissiveIntensity: 0.25 });
+                const miniHeart = new THREE.Mesh(miniGeo, materialMini);
+                miniHeart.scale.set(scaleVal, scaleVal, scaleVal);
+                return miniHeart;
+            }
+
+            const colorPalette = [0xff4d6d, 0xff6b8b, 0xff85a1, 0xff9eb5, 0xffb3c6];
+            const orbitItems = [];
+
+            const outerCount = 16;
+            const innerCount = 10;
+
+            for (let i = 0; i < outerCount; i++) {
+                const col = colorPalette[i % colorPalette.length];
+                const miniLove = createMiniHeart(col, 0.18);
+                scene.add(miniLove);
+                orbitItems.push({
+                    mesh: miniLove, speed: 0.7 + Math.random() * 0.3, angle: (i / outerCount) * Math.PI * 2,
+                    radiusX: 1.8, radiusZ: 1.8, yOffset: Math.sin((i / outerCount) * Math.PI * 4) * 0.06, yAmp: 0.05
+                });
+            }
+            for (let i = 0; i < innerCount; i++) {
+                const miniLove = createMiniHeart(0xffa0b5, 0.14);
+                scene.add(miniLove);
+                orbitItems.push({
+                    mesh: miniLove, speed: 0.9 + Math.random() * 0.3, angle: (i / innerCount) * Math.PI * 2,
+                    radiusX: 1.25, radiusZ: 1.25, yOffset: Math.cos((i / innerCount) * Math.PI * 3) * 0.05, yAmp: 0.05
+                });
+            }
+
+            const mainRingGeo = new THREE.TorusGeometry(1.8, 0.04, 64, 200);
+            const ringMaterial1 = new THREE.MeshStandardMaterial({ color: 0xff99bb, emissive: 0xff5577, emissiveIntensity: 0.2, transparent: true, opacity: 0.4 });
+            const mainRing = new THREE.Mesh(mainRingGeo, ringMaterial1);
+            mainRing.rotation.x = Math.PI / 2.5;
+            scene.add(mainRing);
+
+            const innerRingGeo = new THREE.TorusGeometry(1.25, 0.03, 64, 200);
+            const ringMaterial2 = new THREE.MeshStandardMaterial({ color: 0xffaacc, emissive: 0xff6688, emissiveIntensity: 0.15, transparent: true, opacity: 0.45 });
+            const innerRing = new THREE.Mesh(innerRingGeo, ringMaterial2);
+            innerRing.rotation.x = Math.PI / 2.4;
+            scene.add(innerRing);
+
+            let time = 0;
+            let animationId;
+
+            function animateStage1() {
+                if (currentStage !== 1) return;
+                animationId = requestAnimationFrame(animateStage1);
+                time += 0.016;
+
+                heartMesh.rotation.y += 0.005;
+                heartMesh.rotation.x = 0.15 + Math.sin(time * 0.4) * 0.03;
+                const breathScale = 1 + Math.sin(time * 1.8) * 0.006;
+                heartMesh.scale.set(0.85 * breathScale, 0.85 * breathScale, 0.85 * breathScale);
+
+                sparkles.rotation.y += 0.002;
+
+                for (let item of orbitItems) {
+                    item.angle += 0.01 * item.speed;
+                    if (item.angle > Math.PI * 2) item.angle -= Math.PI * 2;
+                    const posX = Math.cos(item.angle) * item.radiusX;
+                    const posZ = Math.sin(item.angle) * item.radiusZ;
+                    const posY = item.yOffset + Math.sin(item.angle * 2) * item.yAmp;
+                    item.mesh.position.set(posX, posY + 0.1, posZ);
+                    item.mesh.rotation.y = Math.atan2(posZ, posX) + Math.PI / 2;
+                }
+
+                mainRing.rotation.z += 0.0015;
+                innerRing.rotation.x += 0.001;
+
+                camera.position.x += (3.2 + Math.sin(time * 0.15) * 0.05 - camera.position.x) * 0.02;
+                camera.position.y += (2.2 + Math.cos(time * 0.2) * 0.04 - camera.position.y) * 0.02;
+                camera.position.z += (5.5 + Math.sin(time * 0.12) * 0.06 - camera.position.z) * 0.02;
+                camera.lookAt(0, 0.2 + Math.sin(time * 0.3) * 0.02, 0);
+
+                renderer.render(scene, camera);
+            }
+
+            animateStage1();
+
+            const handleResize = () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            };
+            window.addEventListener('resize', handleResize);
+
+            stage1Cleanup = () => {
+                cancelAnimationFrame(animationId);
+                window.removeEventListener('resize', handleResize);
+                renderer.dispose();
+                renderer.domElement.remove();
+            };
+
+            setTimeout(() => {
+                if (currentStage === 1) {
+                    if (stage1Cleanup) stage1Cleanup();
+                    goToStage(2);
+                }
+            }, 5000);
+        }
+
+        // ========== STAGE 2: SCROLL LOVE PARTICLE ==========
+        function initStage2() {
+            window.stage2Initialized = true;
+            const canvas = document.getElementById("particleCanvas");
+            const ctx = canvas.getContext("2d");
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener("resize", resize);
+
+            const particles = [];
+            const particleCount = 600;
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.tx = this.x;
+                    this.ty = this.y;
+                    this.size = 10;
+                }
+                draw() {
+                    ctx.font = this.size + "px serif";
+                    ctx.fillText("❤️", this.x, this.y);
+                }
+                update() {
+                    this.x += (this.tx - this.x) * 0.08;
+                    this.y += (this.ty - this.y) * 0.08;
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            const letters = ["R", "I", "K", "O", "S", "A", "Y", "A", "N", "G", "M", "U", "N", "A"];
+            let shapes = [];
+
+            function createOutline(text) {
+                const off = document.createElement("canvas");
+                const octx = off.getContext("2d");
+                off.width = canvas.width;
+                off.height = canvas.height;
+                let fontSize = canvas.width < 600 ? 140 : 200;
+                octx.strokeStyle = "black";
+                octx.lineWidth = 6;
+                octx.textAlign = "center";
+                octx.font = "bold " + fontSize + "px Arial";
+                octx.strokeText(text, off.width / 2, off.height / 2);
+                const data = octx.getImageData(0, 0, off.width, off.height).data;
+                const points = [];
+                const step = 6;
+                for (let y = 0; y < off.height; y += step) {
+                    for (let x = 0; x < off.width; x += step) {
+                        const index = (y * off.width + x) * 4;
+                        if (data[index + 3] > 150) {
+                            points.push({ x, y });
+                        }
+                    }
+                }
+                return points;
+            }
+
+            function heartShape() {
+                const points = [];
+                for (let t = 0; t < Math.PI * 2; t += 0.015) {
+                    let x = 16 * Math.pow(Math.sin(t), 3);
+                    let y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+                    points.push({
+                        x: canvas.width / 2 + x * 10,
+                        y: canvas.height / 2 - y * 10
+                    });
+                }
+                return points;
+            }
+
+            letters.forEach(l => { shapes.push(createOutline(l)); });
+            shapes.push(heartShape());
+
+            function scrollStage() {
+                const scroll = window.scrollY;
+                const max = document.body.scrollHeight - window.innerHeight;
+                const progress = scroll / max;
+                return Math.floor(progress * shapes.length);
+            }
+
+            function checkScrollComplete() {
+                const scroll = window.scrollY;
+                const max = document.body.scrollHeight - window.innerHeight;
+                if (max > 0 && scroll >= max - 10) {
+                    if (!stage2ScrollCompleted) {
+                        stage2ScrollCompleted = true;
+                        nextButton.textContent = '✨ Lanjut ke Gallery ✨';
+                    }
+                }
+            }
+
+            let animationId;
+            function animateParticles() {
+                if (currentStage !== 2) return;
+                animationId = requestAnimationFrame(animateParticles);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let stage = scrollStage();
+                let target = shapes[stage] || shapes[shapes.length - 1];
+                particles.forEach((p, i) => {
+                    let point = target[i % target.length];
+                    if (point) {
+                        p.tx = point.x;
+                        p.ty = point.y;
+                        p.update();
+                        p.draw();
+                    }
+                });
+                checkScrollComplete();
+            }
+
+            const scrollDiv = document.getElementById('scrollContent');
+            scrollDiv.style.height = '900vh';
+
+            animateParticles();
+
+            window.addEventListener('scroll', checkScrollComplete);
+
+            window.stage2Cleanup = () => {
+                cancelAnimationFrame(animationId);
+                window.removeEventListener('scroll', checkScrollComplete);
+            };
+        }
+
+        // ========== STAGE 3: 3D CARD GALLERY DENGAN SEQUENTIAL LOADING (SAMA PERSIS SEPERTI ASLI, TAMBAH LOADING BERTAHAP) ==========
+        function initStage3WithSequentialLoading() {
+            window.stage3Initialized = true;
+
+            const contentData = [
+                { type: "photo", src: "photo/1.jpg" }, { type: "text", text: "Aa sayanggg bangettt sama neng🥰🥰" },
+                { type: "photo", src: "photo/2.jpg" }, { type: "text", text: "Sayanggg sayanggg sayanggg bangettttttt🥰🥰" },
+                { type: "photo", src: "photo/3.jpg" }, { type: "text", text: "Jangan tinggalin aa yahh sayanggg🥹🥰" },
+                { type: "photo", src: "photo/4.jpg" }, { type: "text", text: "Aa butuh bangettt sama neng🥹🥰" },
+                { type: "photo", src: "photo/5.jpg" }, { type: "photo", src: "photo/6.jpg" },
+                { type: "text", text: "Aa ngga bisa tanpa neng🥹🥰" }, { type: "photo", src: "photo/7.jpg" },
+                { type: "text", text: "Aa bersyukur bangettt punya neng🥰🥰" }, { type: "photo", src: "photo/8.jpg" },
+                { type: "text", text: "Aa bangga bangettt sama neng🥰🥰" }, { type: "photo", src: "photo/9.jpg" },
+                { type: "text", text: "Semangat yahh sayanggg cantikkk🥰🥰" }, { type: "photo", src: "photo/10.jpg" },
+                { type: "photo", src: "photo/11.jpg" }, { type: "text", text: "Semangat buat semuanya🥳🥳" },
+                { type: "photo", src: "photo/12.jpg" }, { type: "text", text: "Semangat buat kuliah nya di bekasi nya🥰🥰" },
+                { type: "photo", src: "photo/13.jpg" }, { type: "text", text: "Semangat LDR nya juga sayanggg🥹🥹🥰🥰" },
+                { type: "photo", src: "photo/14.jpg" }, { type: "text", text: "Aa kangennnn bangettt sama neng🥹😭" },
+                { type: "photo", src: "photo/15.jpg" }, { type: "photo", src: "photo/16.jpg" },
+                { type: "text", text: "Pengen main lagi🥹🥹" }, { type: "photo", src: "photo/17.jpg" },
+                { type: "text", text: "Kangen jajan sama neng🥹🥹" }, { type: "photo", src: "photo/18.jpg" },
+                { type: "text", text: "Ayokkk semangat yahh sayanggg🥹🥹" }, { type: "photo", src: "photo/19.jpg" },
+                { type: "text", text: "Maaf yahhh neng harus nunggu lama🥹🥹" }, { type: "photo", src: "photo/20.jpg" },
+                { type: "photo", src: "photo/21.jpg" }, { type: "text", text: "Pengen cepet cepet nikah sama neng😭😭" },
+                { type: "photo", src: "photo/22.jpg" }, { type: "text", text: "Ngga kuat ldr😭😭" },
+                { type: "photo", src: "photo/23.jpg" }, { type: "text", text: "Semangat terus yahh sayanggg🥹🥹" },
+                { type: "photo", src: "photo/24.jpg" }, { type: "text", text: "Aa sayanggg bangettt sama neng🥰🥰" },
+                { type: "photo", src: "photo/25.jpg" }
+            ];
+
+            const camera3d = document.getElementById("camera3d");
+            camera3d.innerHTML = '';
+            const grid = 3;
+            const layers = 5;
+            const spacing = 300;
+            const depthSpacing = 2000;
+
+            // Simpan semua elemen card foto untuk loading sequential
+            const photoCards = [];
+
+            let index = 0;
+            for (let l = 0; l < layers; l++) {
+                for (let y = 0; y < grid; y++) {
+                    for (let x = 0; x < grid; x++) {
+                        let data = contentData[index++];
+                        if (!data) break;
+                        const card = document.createElement("div");
+                        card.className = "card";
+                        if (data.type === "photo") {
+                            // Buat placeholder loading
+                            const placeholder = document.createElement("div");
+                            placeholder.className = "img-placeholder";
+                            placeholder.innerHTML = "❤️";
+                            const img = document.createElement("img");
+                            img.style.opacity = "0";
+                            card.appendChild(placeholder);
+                            card.appendChild(img);
+                            photoCards.push({
+                                card: card,
+                                img: img,
+                                placeholder: placeholder,
+                                src: data.src
+                            });
+                        } else {
+                            card.classList.add("textCard");
+                            card.innerText = data.text;
+                        }
+                        const posX = (x - (grid - 1) / 2) * spacing;
+                        const posY = (y - (grid - 1) / 2) * spacing;
+                        const posZ = -(l * depthSpacing);
+                        card.style.transform = `translateX(${posX}px) translateY(${posY}px) translateZ(${posZ}px)`;
+                        camera3d.appendChild(card);
+                    }
+                }
+            }
+
+            // LOADING FOTO SATU PER SATU DARI DEPAN (URUTAN ASLI)
+            let currentLoadIndex = 0;
+
+            function loadNextPhoto() {
+                if (currentLoadIndex >= photoCards.length) return;
+
+                const item = photoCards[currentLoadIndex];
+                const tempImg = new Image();
+
+                tempImg.onload = () => {
+                    item.img.src = item.src;
+                    item.img.style.opacity = "1";
+                    if (item.placeholder) item.placeholder.style.display = "none";
+                    currentLoadIndex++;
+                    loadNextPhoto(); // lanjut ke foto berikutnya
+                };
+
+                tempImg.onerror = () => {
+                    // fallback ke hati jika gagal load
+                    item.img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23ffccd5"/%3E%3Ctext x="50" y="55" text-anchor="middle" fill="%23ff4d6d" font-size="40"%3E❤️%3C/text%3E%3C/svg%3E';
+                    item.img.style.opacity = "1";
+                    if (item.placeholder) item.placeholder.style.display = "none";
+                    currentLoadIndex++;
+                    loadNextPhoto();
+                };
+
+                tempImg.src = item.src;
+            }
+
+            // Mulai loading dari foto pertama
+            if (photoCards.length > 0) {
+                setTimeout(() => loadNextPhoto(), 100);
+            }
+
+            // ========== KONTROL GESER DAN ZOOM (SAMA PERSIS SEPERTI KODE ASLI) ==========
+            let camX = 0, camY = 0, camZ = -1000;
+
+            function updateCamera() {
+                camera3d.style.transform = `translateX(${camX}px) translateY(${camY}px) translateZ(${camZ}px)`;
+            }
+            updateCamera();
+
+            let startX, startY;
+            const onTouchStart = (e) => {
+                if (currentStage === 3 && e.touches.length === 1) {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                }
+            };
+            const onTouchMove = (e) => {
+                if (currentStage === 3 && e.touches.length === 1) {
+                    let dx = e.touches[0].clientX - startX;
+                    let dy = e.touches[0].clientY - startY;
+                    camX += dx * 0.5;
+                    camY += dy * 0.5;
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    updateCamera();
+                    e.preventDefault();
+                }
+            };
+            let startDist = 0;
+            const onTouchStartPinch = (e) => {
+                if (currentStage === 3 && e.touches.length === 2) {
+                    startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                }
+            };
+            const onTouchMovePinch = (e) => {
+                if (currentStage === 3 && e.touches.length === 2) {
+                    let dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    let diff = dist - startDist;
+                    camZ += diff * 2;
+                    startDist = dist;
+                    updateCamera();
+                    e.preventDefault();
+                }
+            };
+
+            document.addEventListener("touchstart", onTouchStart);
+            document.addEventListener("touchmove", onTouchMove, { passive: false });
+            document.addEventListener("touchstart", onTouchStartPinch);
+            document.addEventListener("touchmove", onTouchMovePinch, { passive: false });
+
+            window.stage3Cleanup = () => {
+                document.removeEventListener("touchstart", onTouchStart);
+                document.removeEventListener("touchmove", onTouchMove);
+                document.removeEventListener("touchstart", onTouchStartPinch);
+                document.removeEventListener("touchmove", onTouchMovePinch);
+            };
+        }
+
+        nextButton.addEventListener('click', () => {
+            if (currentStage === 2 && stage2ScrollCompleted) {
+                if (window.stage2Cleanup) window.stage2Cleanup();
+                goToStage(3);
+            } else if (currentStage === 2 && !stage2ScrollCompleted) {
+                alert('✨ Silakan scroll sampai ke bawah untuk melanjutkan! ✨');
+            }
+        });
+
+        initStage1();
+    </script>
+</body>
+
+</html>
