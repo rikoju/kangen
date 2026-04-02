@@ -163,13 +163,18 @@
             overflow: hidden;
             backface-visibility: visible;
             will-change: transform;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.02) translateZ(20px);
         }
 
         .card img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: opacity 0.2s ease;
+            transition: opacity 0.3s ease;
         }
 
         .card .img-placeholder {
@@ -179,10 +184,27 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #ffeef2;
+            background: linear-gradient(135deg, #ffeef2, #ffe0e8);
             color: #ff8aa8;
-            font-size: 32px;
+            font-size: 42px;
             z-index: 2;
+            transition: opacity 0.3s ease;
+        }
+
+        .card .img-placeholder.fallback {
+            background: linear-gradient(135deg, #ffd6e0, #ffc0ce);
+            color: #ff4d6d;
+        }
+
+        .card .error-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .card .error-text {
+            font-size: 12px;
+            color: #ff6b8b;
+            margin-top: 8px;
         }
 
         .textCard {
@@ -193,6 +215,9 @@
             font-family: 'Segoe UI', 'Poppins', sans-serif;
             color: #ff4d6d;
             background: linear-gradient(135deg, #fff, #fff0f2);
+            font-weight: 500;
+            word-wrap: break-word;
+            overflow-y: auto;
         }
 
         /* Scrollbar styling */
@@ -326,6 +351,23 @@
             display: none;
         }
 
+        /* Loading indicator untuk stage 3 */
+        .global-loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 1500;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            backdrop-filter: blur(8px);
+        }
+
         @media (max-width: 600px) {
             .gallery-hint {
                 font-size: 11px;
@@ -369,6 +411,8 @@
         </div>
     </div>
 
+    <div id="globalLoading" class="global-loading">✨ Memuat galeri... ✨</div>
+
     <button id="nextButton" class="next-button hidden">✨ Lanjutkan ✨</button>
 
     <script type="importmap">
@@ -394,6 +438,7 @@
         const stage3Div = document.getElementById('stage3');
         const nextButton = document.getElementById('nextButton');
         const galleryHint = document.getElementById('galleryHint');
+        const globalLoading = document.getElementById('globalLoading');
 
         // Fungsi untuk menampilkan tutorial
         function showTutorial(message, icon, onClose) {
@@ -438,6 +483,7 @@
                 nextButton.classList.add('hidden');
                 document.body.style.overflow = 'auto';
                 if (galleryHint) galleryHint.classList.add('hidden');
+                globalLoading.style.display = 'none';
             } else if (stage === 2) {
                 stage2Div.classList.remove('stage-hidden');
                 stage2Div.classList.add('stage-visible');
@@ -446,6 +492,7 @@
                 nextButton.textContent = '✨ Lanjutkan ✨';
                 document.body.style.overflow = 'auto';
                 if (galleryHint) galleryHint.classList.add('hidden');
+                globalLoading.style.display = 'none';
                 if (!window.stage2Initialized) {
                     initStage2();
                 }
@@ -468,6 +515,7 @@
                 nextButton.classList.add('hidden');
                 document.body.style.overflow = 'hidden';
                 if (galleryHint) galleryHint.classList.remove('hidden');
+                globalLoading.style.display = 'block';
                 if (!window.stage3Initialized) {
                     initStage3WithSequentialLoading();
                 }
@@ -820,7 +868,7 @@
             };
         }
 
-        // ========== STAGE 3: 3D CARD GALLERY DENGAN SEQUENTIAL LOADING (SAMA PERSIS SEPERTI ASLI, TAMBAH LOADING BERTAHAP) ==========
+        // ========== STAGE 3: 3D CARD GALLERY DENGAN FALLBACK OTOMATIS ==========
         function initStage3WithSequentialLoading() {
             window.stage3Initialized = true;
 
@@ -857,8 +905,9 @@
             const spacing = 300;
             const depthSpacing = 2000;
 
-            // Simpan semua elemen card foto untuk loading sequential
             const photoCards = [];
+            let loadedCount = 0;
+            const totalPhotos = contentData.filter(item => item.type === "photo").length;
 
             let index = 0;
             for (let l = 0; l < layers; l++) {
@@ -869,10 +918,9 @@
                         const card = document.createElement("div");
                         card.className = "card";
                         if (data.type === "photo") {
-                            // Buat placeholder loading
                             const placeholder = document.createElement("div");
                             placeholder.className = "img-placeholder";
-                            placeholder.innerHTML = "❤️";
+                            placeholder.innerHTML = "❤️ <br><span style='font-size:12px'>Memuat...</span>";
                             const img = document.createElement("img");
                             img.style.opacity = "0";
                             card.appendChild(placeholder);
@@ -896,41 +944,126 @@
                 }
             }
 
-            // LOADING FOTO SATU PER SATU DARI DEPAN (URUTAN ASLI)
-            let currentLoadIndex = 0;
+            // Fungsi untuk membuat fallback gambar (Data URL)
+            function createFallbackImage(backgroundColor = '#ffccd5', icon = '❤️', text = '') {
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 500;
+                const ctx = canvas.getContext('2d');
+
+                // Background gradient
+                const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                grad.addColorStop(0, backgroundColor);
+                grad.addColorStop(1, '#ffb3c6');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Icon
+                ctx.fillStyle = '#ff4d6d';
+                ctx.font = 'bold 80px "Segoe UI", "Poppins"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(icon, canvas.width / 2, canvas.height / 2 - 20);
+
+                // Text
+                if (text) {
+                    ctx.font = '24px "Segoe UI", "Poppins"';
+                    ctx.fillStyle = '#ff6b8b';
+                    ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 60);
+                }
+
+                return canvas.toDataURL();
+            }
 
             function loadNextPhoto() {
-                if (currentLoadIndex >= photoCards.length) return;
+                if (currentLoadIndex >= photoCards.length) {
+                    if (loadedCount >= totalPhotos) {
+                        setTimeout(() => {
+                            if (globalLoading) globalLoading.style.display = 'none';
+                        }, 500);
+                    }
+                    return;
+                }
 
                 const item = photoCards[currentLoadIndex];
                 const tempImg = new Image();
+                let timeoutId;
 
-                tempImg.onload = () => {
-                    item.img.src = item.src;
-                    item.img.style.opacity = "1";
-                    if (item.placeholder) item.placeholder.style.display = "none";
-                    currentLoadIndex++;
-                    loadNextPhoto(); // lanjut ke foto berikutnya
+                const cleanup = () => {
+                    if (timeoutId) clearTimeout(timeoutId);
                 };
 
-                tempImg.onerror = () => {
-                    // fallback ke hati jika gagal load
-                    item.img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23ffccd5"/%3E%3Ctext x="50" y="55" text-anchor="middle" fill="%23ff4d6d" font-size="40"%3E❤️%3C/text%3E%3C/svg%3E';
+                const onSuccess = () => {
+                    cleanup();
+                    item.img.src = item.src;
                     item.img.style.opacity = "1";
-                    if (item.placeholder) item.placeholder.style.display = "none";
+                    if (item.placeholder) {
+                        item.placeholder.style.opacity = "0";
+                        setTimeout(() => {
+                            if (item.placeholder) item.placeholder.style.display = "none";
+                        }, 300);
+                    }
+                    loadedCount++;
                     currentLoadIndex++;
                     loadNextPhoto();
                 };
 
+                const onError = () => {
+                    cleanup();
+                    console.warn(`Gagal memuat: ${item.src}, menggunakan fallback`);
+                    // Buat fallback image yang lebih personal
+                    const fallbackUrl = createFallbackImage('#ffeef2', '💕', 'Love You');
+                    item.img.src = fallbackUrl;
+                    item.img.style.opacity = "1";
+                    if (item.placeholder) {
+                        item.placeholder.classList.add('fallback');
+                        item.placeholder.innerHTML = '💝<br><span style="font-size:11px">Gambar Spesial</span>';
+                        item.placeholder.style.opacity = "0";
+                        setTimeout(() => {
+                            if (item.placeholder) item.placeholder.style.display = "none";
+                        }, 300);
+                    }
+                    loadedCount++;
+                    currentLoadIndex++;
+                    loadNextPhoto();
+                };
+
+                timeoutId = setTimeout(() => {
+                    console.warn(`Timeout memuat: ${item.src}`);
+                    onError();
+                }, 5000);
+
+                tempImg.onload = onSuccess;
+                tempImg.onerror = onError;
                 tempImg.src = item.src;
             }
 
-            // Mulai loading dari foto pertama
+            let currentLoadIndex = 0;
+
+            // Update loading text
+            const updateLoadingStatus = setInterval(() => {
+                if (currentStage === 3 && globalLoading && globalLoading.style.display === 'block') {
+                    if (loadedCount < totalPhotos) {
+                        globalLoading.innerHTML = `✨ Memuat galeri... (${loadedCount}/${totalPhotos}) ✨`;
+                    } else {
+                        globalLoading.innerHTML = `✨ Galeri siap! ✨`;
+                        setTimeout(() => {
+                            if (globalLoading) globalLoading.style.display = 'none';
+                        }, 1000);
+                        clearInterval(updateLoadingStatus);
+                    }
+                } else if (currentStage !== 3) {
+                    clearInterval(updateLoadingStatus);
+                }
+            }, 200);
+
             if (photoCards.length > 0) {
                 setTimeout(() => loadNextPhoto(), 100);
+            } else {
+                if (globalLoading) globalLoading.style.display = 'none';
             }
 
-            // ========== KONTROL GESER DAN ZOOM (SAMA PERSIS SEPERTI KODE ASLI) ==========
+            // ========== KONTROL GESER DAN ZOOM ==========
             let camX = 0, camY = 0, camZ = -1000;
 
             function updateCamera() {
@@ -984,6 +1117,7 @@
                 document.removeEventListener("touchmove", onTouchMove);
                 document.removeEventListener("touchstart", onTouchStartPinch);
                 document.removeEventListener("touchmove", onTouchMovePinch);
+                clearInterval(updateLoadingStatus);
             };
         }
 
